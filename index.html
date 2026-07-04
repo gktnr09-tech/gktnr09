@@ -1,0 +1,907 @@
+<!DOCTYPE html>.
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스마트습관플랜 - 우리집 디지털 학습 가이드라인</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (Noto Sans KR & Jua for playful headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f0f7ff;
+    }
+    .font-playful {
+      font-family: 'Jua', sans-serif;
+    }
+    /* 애니메이션용 캔버스 */
+    #effect-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+    /* 마이크로 인터랙션 */
+    .bounce-hover:hover {
+      transform: scale(1.03);
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .active-scale:active {
+      transform: scale(0.97);
+    }
+    /* 스크롤바 미려하게 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 pb-10">
+
+  <!-- 이펙트 캔버스 (폭죽 및 별가루 전용) -->
+  <canvas id="effect-canvas"></canvas>
+
+  <!-- 상단 헤더 및 개발자 정보 -->
+  <header class="w-full bg-white/80 backdrop-blur-md shadow-sm border-b border-sky-100 py-3 px-4 sticky top-0 z-40 transition-all">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 shadow-inner">
+          <i data-lucide="smartphone"></i>
+        </div>
+        <div>
+          <h1 class="font-playful text-2xl text-indigo-600 tracking-wide">스마트습관플랜</h1>
+          <p class="text-[11px] text-slate-400 font-medium">우리집 디지털 학습 가이드라인 대시보드</p>
+        </div>
+      </div>
+      <div class="text-center sm:text-right">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+          개발자: 가치있는 미래교육 연구소 대표 김병찬
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 컨텐츠 컨테이너 -->
+  <main class="flex-grow max-w-4xl w-full mx-auto px-4 mt-6">
+
+    <!-- [STEP 1] 초기 설정 화면 (Rule Setup) -->
+    <div id="step-setup" class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-dashed border-indigo-200 transition-all duration-300">
+      <div class="text-center mb-6">
+        <span class="inline-block px-4 py-1 rounded-full bg-amber-100 text-amber-700 font-bold text-sm mb-2 font-playful">약속 정하기 Step 1</span>
+        <h2 class="font-playful text-3xl text-indigo-700">가족 디지털 규칙 세우기 🏡</h2>
+        <p class="text-slate-500 mt-2 text-sm sm:text-base">부모님과 아이가 마주 앉아 대화하며, 오늘 지킬 즐거운 스마트 기기 약속을 입력해보세요! (최대 10개)</p>
+      </div>
+
+      <!-- 규칙 추가 입력 폼 -->
+      <div class="bg-indigo-50/50 p-4 sm:p-5 rounded-2xl mb-6 border border-indigo-100">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="w-full sm:w-1/4">
+            <label class="block text-xs font-bold text-indigo-700 mb-1">담당 구성원</label>
+            <div class="relative">
+              <span class="absolute left-3 top-3.5 text-slate-400">
+                <i data-lucide="user" class="w-4 h-4"></i>
+              </span>
+              <input type="text" id="input-member" placeholder="예: 민우, 아빠" 
+                class="w-full pl-9 pr-3 py-2.5 rounded-xl border-2 border-indigo-100 focus:border-indigo-400 focus:outline-none text-sm font-semibold text-slate-700 bg-white shadow-sm">
+            </div>
+          </div>
+          <div class="w-full sm:w-3/4">
+            <label class="block text-xs font-bold text-indigo-700 mb-1">실천할 약속 규칙</label>
+            <div class="flex gap-2">
+              <div class="relative flex-grow">
+                <span class="absolute left-3 top-3.5 text-slate-400">
+                  <i data-lucide="check-square" class="w-4 h-4"></i>
+                </span>
+                <input type="text" id="input-rule" placeholder="예: 유튜브 시청 후 스스로 기기 전원 끄기" 
+                  class="w-full pl-9 pr-3 py-2.5 rounded-xl border-2 border-indigo-100 focus:border-indigo-400 focus:outline-none text-sm text-slate-700 bg-white shadow-sm">
+              </div>
+              <button onclick="addRule()" class="bg-indigo-500 hover:bg-indigo-600 active-scale text-white font-bold px-5 py-2.5 rounded-xl flex items-center gap-1 shrink-0 transition-all shadow-md shadow-indigo-200">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                <span class="hidden sm:inline">추가</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2">※ 가족 구성원의 이름과 실천할 행동을 명확하게 작성해 주세요!</p>
+      </div>
+
+      <!-- 입력된 규칙 목록 -->
+      <div class="mb-8">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-bold text-indigo-900 flex items-center gap-2">
+            <i data-lucide="list-todo" class="text-indigo-500 w-5 h-5"></i>
+            작성 중인 규칙 리스트 
+            <span id="rule-count-badge" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full font-bold">0 / 10</span>
+          </h3>
+          <button onclick="loadTemplate()" class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-semibold underline">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 추천 약속 불러오기
+          </button>
+        </div>
+
+        <div id="rule-preview-list" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+          <!-- 등록된 규칙이 없을 때 기본 UI -->
+          <div id="empty-preview" class="text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+            <p class="text-slate-400 text-sm">아직 등록된 규칙이 없습니다.</p>
+            <p class="text-slate-400 text-xs mt-1">위의 입력칸에 구성원과 규칙을 입력하여 리스트를 완성하세요!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 가이드라인 시작하기 버튼 -->
+      <div class="text-center">
+        <button onclick="startDashboard()" id="btn-start" disabled
+          class="w-full sm:w-auto px-10 py-4 bg-slate-300 text-slate-500 cursor-not-allowed font-playful text-xl rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 mx-auto">
+          <i data-lucide="play" class="w-6 h-6"></i>
+          가이드라인 시작하기
+        </button>
+        <p class="text-xs text-slate-400 mt-2">※ 가이드라인을 시작하려면 최소 1개 이상의 규칙을 등록해야 합니다.</p>
+      </div>
+    </div>
+
+
+    <!-- [STEP 2] 메인 대시보드 화면 (Dashboard) -->
+    <div id="step-dashboard" class="hidden transition-all duration-300">
+      
+      <!-- 상단 스탯 카드 세션 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- 오늘 날짜 및 캐릭터 메시지 -->
+        <div class="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-3xl p-5 border border-teal-100 shadow-md flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-teal-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+            🌱
+          </div>
+          <div>
+            <div class="text-xs font-bold text-teal-700" id="current-date-str">오늘의 약속판</div>
+            <div class="font-playful text-xl text-emerald-800" id="dashboard-welcome">스마트 패밀리 화이팅!</div>
+          </div>
+        </div>
+
+        <!-- 남은 약속 개수 -->
+        <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-5 border border-amber-100 shadow-md flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-amber-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">
+            🔔
+          </div>
+          <div>
+            <div class="text-xs font-bold text-amber-700">남은 실천 항목</div>
+            <div class="font-playful text-xl text-amber-800" id="remaining-count-text">0 / 0개</div>
+          </div>
+        </div>
+
+        <!-- 현재 평균 성취도 -->
+        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-5 border border-indigo-100 shadow-md flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">
+            🏆
+          </div>
+          <div>
+            <div class="text-xs font-bold text-indigo-700">실시간 달성률</div>
+            <div class="font-playful text-xl text-indigo-800" id="live-percent-text">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프로그레스 바 카드 -->
+      <div class="bg-white rounded-3xl p-6 shadow-xl border border-indigo-100 mb-6">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-sm font-bold text-indigo-800 flex items-center gap-1.5">
+            <i data-lucide="trending-up" class="w-4 h-4 text-pink-500"></i>
+            오늘의 목표 달성도
+          </span>
+          <span id="progress-percentage" class="font-playful text-2xl text-pink-500">0%</span>
+        </div>
+        
+        <!-- 실시간 프로그레스 바 -->
+        <div class="w-full bg-slate-100 h-6 rounded-full overflow-hidden p-1 shadow-inner border border-slate-200">
+          <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 rounded-full transition-all duration-500 ease-out shadow-sm" style="width: 0%"></div>
+        </div>
+        
+        <div class="flex justify-between text-[11px] text-slate-400 mt-2 px-1">
+          <span>차근차근 실천해요 😊</span>
+          <span>완벽한 디지털 리더 🌟</span>
+        </div>
+      </div>
+
+      <!-- 약속 체크리스트 보드 -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-indigo-100 mb-6">
+        <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
+          <h3 class="font-playful text-2xl text-slate-800 flex items-center gap-2">
+            <span class="p-1.5 bg-indigo-50 rounded-lg text-indigo-500">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+            </span>
+            우리의 오늘 행동 약속들
+          </h3>
+          <span class="text-xs text-slate-400">지킬 때마다 예쁜 체크박스를 터치해요!</span>
+        </div>
+
+        <!-- 실제 체크리스트가 동적으로 렌더링될 영역 -->
+        <div id="checklist-render-area" class="space-y-4">
+          <!-- Dynamic checklist items will be injected here -->
+        </div>
+
+        <!-- 하단 액션 버튼 영역 -->
+        <div class="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row gap-3 justify-center">
+          <button onclick="triggerSettlement()" class="bounce-hover active-scale flex-grow max-w-md py-4 px-8 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-playful text-xl rounded-2xl shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 transition-all">
+            <i data-lucide="calculator" class="w-6 h-6"></i>
+            오늘의 일일 정산하기
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- [STEP 3] 일일 정산 모달/결과 화면 (Settlement Overlay) -->
+    <div id="step-result" class="hidden bg-white rounded-3xl p-6 sm:p-10 shadow-2xl border-4 border-indigo-400 text-center transition-all duration-300 max-w-xl mx-auto">
+      
+      <div id="result-badge-container" class="w-24 h-24 rounded-full mx-auto flex items-center justify-center text-5xl mb-4 shadow-lg animate-bounce">
+        <!-- 이모지 또는 등급 뱃지 -->
+      </div>
+
+      <div class="mb-2">
+        <span class="text-sm font-semibold text-indigo-500 uppercase tracking-widest">Today's Settlement Result</span>
+      </div>
+      
+      <!-- 결과 메시지 타이틀 -->
+      <h2 id="result-title" class="font-playful text-3xl sm:text-4xl text-indigo-900 mb-3"></h2>
+      
+      <!-- 상세 격려글 -->
+      <p id="result-description" class="text-slate-600 text-sm sm:text-base max-w-md mx-auto mb-6 leading-relaxed"></p>
+
+      <!-- 오늘 기록 스코어 보드 -->
+      <div class="bg-indigo-50 rounded-2xl p-4 max-w-xs mx-auto mb-8 border border-indigo-100">
+        <div class="text-xs text-indigo-400 font-bold">오늘 달성 스코어</div>
+        <div class="font-playful text-3xl text-indigo-600 mt-1" id="result-score">0 / 0개</div>
+        <div class="text-xs text-slate-500 mt-1" id="result-percent">달성도: 0%</div>
+      </div>
+
+      <!-- 결과 후 조작 버튼 -->
+      <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+        <button onclick="resetForNextDay()" class="bounce-hover active-scale flex-1 py-3 px-6 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-md shadow-emerald-200 transition-all flex items-center justify-center gap-1.5">
+          <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+          내일 다시 도전하기
+        </button>
+        <button onclick="goBackToSetup()" class="bounce-hover active-scale flex-1 py-3 px-6 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1.5">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+          규칙 수정하기
+        </button>
+      </div>
+
+    </div>
+
+    <!-- 히스토리 로그 섹션 (대시보드와 정산 화면 모두에서 하단에 표시) -->
+    <div id="history-section" class="hidden mt-8 bg-white rounded-3xl p-5 shadow-lg border border-indigo-100">
+      <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+        <i data-lucide="history" class="text-indigo-500 w-5 h-5"></i>
+        우리의 성장 히스토리 로그 📈
+      </h3>
+      <div id="history-list" class="space-y-2 max-h-44 overflow-y-auto pr-1">
+        <!-- 성장 기록이 누적되는 곳 -->
+        <div id="empty-history" class="text-center py-6 text-xs text-slate-400">
+          정산 버튼을 누르면 매일의 성장 점수가 여기에 차곡차곡 기록돼요!
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 하단 저작권 푸터 -->
+  <footer class="text-center text-xs text-slate-400 mt-10 px-4">
+    <p>© 2026 스마트습관플랜. All Rights Reserved. 가치있는 미래교육 연구소.</p>
+  </footer>
+
+  <!-- 알림 메시지 레이어 (alert 대체용 커스텀 모달) -->
+  <div id="custom-toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs sm:text-sm px-5 py-3 rounded-xl shadow-xl z-50 pointer-events-none opacity-0 transform translate-y-2 transition-all duration-300 flex items-center gap-2">
+    <i data-lucide="info" class="w-4 h-4 text-sky-400"></i>
+    <span id="toast-message">알림 메시지</span>
+  </div>
+
+
+  <!-- 스크립트 비즈니스 로직 -->
+  <script>
+    // 상태 관리 변수들
+    let ruleList = []; // 약속 데이터 { id, member, rule, checked }
+    let historyLog = []; // { date, score, total, percent, resultType }
+
+    // 추천 템플릿 데이터
+    const defaultTemplates = [
+      { member: "아이", rule: "오늘 할당된 디지털 독서 1단원 완료 후 기기 종료하기" },
+      { member: "부모", rule: "아이가 스마트패드로 공부할 때 곁에서 격려해 주고 감시하지 않기" },
+      { member: "아이", rule: "스마트폰을 사용할 때는 바른 자세(거북목 방지) 유지하기" },
+      { member: "가족", rule: "식사 테이블 및 침대 위에서는 모든 디지털 기기를 사용하지 않기" },
+      { member: "아이", rule: "학습 미디어가 아닌 놀이 미디어는 하루 최대 40분 지키기" }
+    ];
+
+    // 이펙트 캔버스 설정
+    const canvas = document.getElementById('effect-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animationId = null;
+
+    // 페이지 로드 시 초기화
+    window.addEventListener('load', () => {
+      lucide.createIcons();
+      updateDateStrings();
+      resizeCanvas();
+      
+      // 화면 크기 조정 시 캔버스 자동 리사이징
+      window.addEventListener('resize', resizeCanvas);
+    });
+
+    // 캔버스 사이즈 맞추기
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    // 커스텀 알림(토스트) 표시 함수 (alert 대용)
+    function showToast(message) {
+      const toast = document.getElementById('custom-toast');
+      const text = document.getElementById('toast-message');
+      text.innerText = message;
+      toast.classList.remove('opacity-0', 'translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2500);
+    }
+
+    // 오늘 날짜 문자열 세팅
+    function updateDateStrings() {
+      const today = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+      const formattedDate = today.toLocaleDateString('ko-KR', options);
+      
+      document.getElementById('current-date-str').innerText = `📅 ${formattedDate}`;
+    }
+
+    // 템플릿 추천 적용하기
+    function loadTemplate() {
+      if (ruleList.length + defaultTemplates.length > 10) {
+        showToast("규칙은 최대 10개까지 등록 가능해요! 불필요한 약속은 삭제 후 추가해 보세요.");
+        return;
+      }
+      
+      defaultTemplates.forEach(tpl => {
+        if (ruleList.length < 10) {
+          ruleList.push({
+            id: Date.now() + Math.random(),
+            member: tpl.member,
+            rule: tpl.rule,
+            checked: false
+          });
+        }
+      });
+      
+      renderRulePreview();
+      showToast("추천 가이드라인 규칙을 불러왔습니다! 📝");
+    }
+
+    // 새 규칙 직접 추가
+    function addRule() {
+      const memberInput = document.getElementById('input-member');
+      const ruleInput = document.getElementById('input-rule');
+      const memberVal = memberInput.value.trim();
+      const ruleVal = ruleInput.value.trim();
+
+      if (!memberVal) {
+        showToast("누가 실천할 약속인지 이름을 적어주세요!");
+        memberInput.focus();
+        return;
+      }
+      if (!ruleVal) {
+        showToast("실천할 약속 내용을 기재해 주세요!");
+        ruleInput.focus();
+        return;
+      }
+
+      if (ruleList.length >= 10) {
+        showToast("규칙은 최대 10개까지만 등록할 수 있습니다. 💡");
+        return;
+      }
+
+      // 데이터 추가
+      ruleList.push({
+        id: Date.now(),
+        member: memberVal,
+        rule: ruleVal,
+        checked: false
+      });
+
+      // 인풋 필드 클리어
+      memberInput.value = '';
+      ruleInput.value = '';
+      memberInput.focus();
+
+      renderRulePreview();
+      showToast("새로운 약속이 리스트에 추가되었습니다! ✨");
+    }
+
+    // 등록한 규칙 삭제
+    function deleteRule(id) {
+      ruleList = ruleList.filter(item => item.id !== id);
+      renderRulePreview();
+    }
+
+    // 규칙 프리뷰 리스트 동적 렌더링 (설정 화면)
+    function renderRulePreview() {
+      const previewArea = document.getElementById('rule-preview-list');
+      const emptyPreview = document.getElementById('empty-preview');
+      const countBadge = document.getElementById('rule-count-badge');
+      const btnStart = document.getElementById('btn-start');
+
+      // 개수 업데이트
+      countBadge.innerText = `${ruleList.length} / 10`;
+
+      if (ruleList.length === 0) {
+        emptyPreview.style.display = 'block';
+        // 가이드라인 시작 비활성화
+        btnStart.disabled = true;
+        btnStart.className = "w-full sm:w-auto px-10 py-4 bg-slate-200 text-slate-400 cursor-not-allowed font-playful text-xl rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 mx-auto";
+        
+        // 프리뷰 내 기존 목록 비우기
+        const items = previewArea.querySelectorAll('.rule-item-preview');
+        items.forEach(el => el.remove());
+        return;
+      }
+
+      emptyPreview.style.display = 'none';
+      
+      // 기존 엘리먼트 제거 후 재생성
+      const items = previewArea.querySelectorAll('.rule-item-preview');
+      items.forEach(el => el.remove());
+
+      ruleList.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = "rule-item-preview flex justify-between items-center bg-white border border-indigo-100 p-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-200";
+        div.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="bg-indigo-100 text-indigo-700 text-xs font-extrabold px-2.5 py-1 rounded-lg shrink-0">
+              👤 ${escapeHtml(item.member)}
+            </span>
+            <p class="text-sm font-medium text-slate-700 truncate">${escapeHtml(item.rule)}</p>
+          </div>
+          <button onclick="deleteRule(${item.id})" class="text-rose-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-all shrink-0 ml-2" title="삭제">
+            <i data-lucide="trash-2" class="w-4.5 h-4.5"></i>
+          </button>
+        `;
+        previewArea.appendChild(div);
+      });
+
+      // 가이드라인 시작 활성화
+      btnStart.disabled = false;
+      btnStart.className = "bounce-hover active-scale w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-playful text-xl rounded-2xl shadow-lg shadow-indigo-200 cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 mx-auto";
+
+      lucide.createIcons();
+    }
+
+    // 대시보드로 전환
+    function startDashboard() {
+      if (ruleList.length === 0) return;
+
+      document.getElementById('step-setup').classList.add('hidden');
+      document.getElementById('step-dashboard').classList.remove('hidden');
+      document.getElementById('history-section').classList.remove('hidden');
+
+      renderChecklist();
+      updateDashboardStats();
+      showToast("우리집 디지털 학습 대시보드를 시작합니다! 오늘의 약속을 잘 실천해봐요! 🚀");
+    }
+
+    // 대시보드 체크박스 렌더링
+    function renderChecklist() {
+      const renderArea = document.getElementById('checklist-render-area');
+      renderArea.innerHTML = '';
+
+      ruleList.forEach((item) => {
+        const itemBox = document.createElement('div');
+        itemBox.className = `flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
+          item.checked 
+            ? 'bg-indigo-50/70 border-indigo-300 shadow-sm' 
+            : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm'
+        }`;
+        
+        // 아이템 박스 자체를 클릭해도 토글되게 함
+        itemBox.onclick = (e) => {
+          // 삭제/수정 등 다른 버튼을 누른 게 아닐 때만 토글 작동
+          if (e.target.closest('button') || e.target.closest('input[type="checkbox"]')) return;
+          toggleRuleCheck(item.id);
+        };
+
+        itemBox.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0 flex-grow">
+            <!-- 사용자 커스텀 대형 체크박스 디자인 -->
+            <div class="relative flex items-center shrink-0">
+              <input type="checkbox" id="chk-${item.id}" ${item.checked ? 'checked' : ''} 
+                class="sr-only" onchange="toggleRuleCheck(${item.id})">
+              <div class="w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+                item.checked 
+                  ? 'bg-indigo-500 border-indigo-500 text-white scale-110' 
+                  : 'bg-white border-slate-300 text-transparent'
+              }">
+                <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
+              </div>
+            </div>
+
+            <!-- 세부 내용 -->
+            <div class="min-w-0">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                item.checked 
+                  ? 'bg-indigo-200 text-indigo-800' 
+                  : 'bg-slate-100 text-slate-600'
+              } mb-1">
+                👤 ${escapeHtml(item.member)}
+              </span>
+              <p class="text-sm sm:text-base font-semibold leading-relaxed ${
+                item.checked ? 'text-indigo-900 line-through opacity-75' : 'text-slate-700'
+              }">${escapeHtml(item.rule)}</p>
+            </div>
+          </div>
+        `;
+        renderArea.appendChild(itemBox);
+      });
+
+      lucide.createIcons();
+    }
+
+    // 규칙 체크 상태 토글
+    function toggleRuleCheck(id) {
+      const item = ruleList.find(r => r.id === id);
+      if (item) {
+        item.checked = !item.checked;
+        renderChecklist();
+        updateDashboardStats();
+      }
+    }
+
+    // 대시보드 통계 및 프로그레스 바 상태 실시간 업데이트
+    function updateDashboardStats() {
+      const total = ruleList.length;
+      const checkedCount = ruleList.filter(item => item.checked).length;
+      const percent = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+      // 프로그레스바 및 수치 반영
+      document.getElementById('progress-bar-fill').style.width = `${percent}%`;
+      document.getElementById('progress-percentage').innerText = `${percent}%`;
+      document.getElementById('live-percent-text').innerText = `${percent}%`;
+      document.getElementById('remaining-count-text').innerText = `${total - checkedCount} / ${total}개`;
+
+      // 달성률에 따른 파스텔 헤더 격려 멘트 변경
+      const welcomeText = document.getElementById('dashboard-welcome');
+      if (percent === 100) {
+        welcomeText.innerText = "와! 벌써 모든 목표 완료! 🥳";
+      } else if (percent >= 50) {
+        welcomeText.innerText = "조금만 더 힘내볼까요? 화이팅! 🔥";
+      } else {
+        welcomeText.innerText = "하나씩 약속을 약속을 채워요! 🚀";
+      }
+    }
+
+    // [정산 로직] 
+    function triggerSettlement() {
+      const total = ruleList.length;
+      const checkedCount = ruleList.filter(item => item.checked).length;
+      const percent = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+      let badge = "";
+      let title = "";
+      let desc = "";
+      let resultType = ""; // 'all', 'half', 'none'
+
+      // 결과 세션 분류
+      if (percent === 100) {
+        badge = "👑";
+        title = "완벽해요! 디지털 리더의 탄생!";
+        desc = "가족 모두가 약속한 스마트폰 및 기기 사용 가이드라인을 100% 완벽하게 실천하셨습니다! 내일도 우리집 디지털 안전 지대를 지켜보아요!";
+        resultType = "all";
+      } else if (percent >= 50) {
+        badge = "⭐";
+        title = "대단해요! 내일은 완벽 달성에 도전해 봐요!";
+        desc = "절반 이상의 목표를 멋지게 달성하셨습니다. 규칙을 조금씩 습관화하다 보면 완벽한 스마트 가족이 되는 것은 시간문제일 뿐이에요!";
+        resultType = "half";
+      } else {
+        badge = "🧡";
+        title = "괜찮아요. 내일은 더 잘할 수 있어요!";
+        desc = "달성률이 조금 미흡하더라도 실망하지 마세요. 약속을 지키려고 노력했던 모든 발걸음이 의미 있답니다. 내일 더 의젓한 모습을 보여주세요. 화이팅!";
+        resultType = "none";
+      }
+
+      // 결과 모달 창 바인딩
+      const container = document.getElementById('result-badge-container');
+      container.innerText = badge;
+      
+      // 색상 테마 조정
+      if (resultType === 'all') {
+        container.className = "w-24 h-24 rounded-full mx-auto flex items-center justify-center text-5xl mb-4 shadow-lg animate-bounce bg-yellow-100 text-yellow-600 border border-yellow-200";
+      } else if (resultType === 'half') {
+        container.className = "w-24 h-24 rounded-full mx-auto flex items-center justify-center text-5xl mb-4 shadow-lg animate-bounce bg-blue-100 text-blue-600 border border-blue-200";
+      } else {
+        container.className = "w-24 h-24 rounded-full mx-auto flex items-center justify-center text-5xl mb-4 shadow-lg animate-bounce bg-slate-100 text-slate-500 border border-slate-200";
+      }
+
+      document.getElementById('result-title').innerText = title;
+      document.getElementById('result-description').innerText = desc;
+      document.getElementById('result-score').innerText = `${checkedCount} / ${total} 개`;
+      document.getElementById('result-percent').innerText = `최종 달성도: ${percent}%`;
+
+      // 레이아웃 변경 (결과화면 활성화, 대시보드 비활성화)
+      document.getElementById('step-dashboard').classList.add('hidden');
+      document.getElementById('step-result').classList.remove('hidden');
+
+      // 히스토리 기록 추가
+      addHistoryLog(checkedCount, total, percent, resultType);
+
+      // 정산 애니메이션 발동
+      if (resultType === 'all') {
+        showConfettiEffect();
+      } else if (resultType === 'half') {
+        showStarShowerEffect();
+      }
+    }
+
+    // 히스토리 추가
+    function addHistoryLog(score, total, percent, resultType) {
+      const today = new Date();
+      const dateStr = `${today.getMonth()+1}월 ${today.getDate()}일`;
+      
+      historyLog.unshift({
+        date: dateStr,
+        score,
+        total,
+        percent,
+        resultType
+      });
+
+      renderHistoryList();
+    }
+
+    // 히스토리 내역 렌더링
+    function renderHistoryList() {
+      const listArea = document.getElementById('history-list');
+      const emptyHistory = document.getElementById('empty-history');
+
+      if (historyLog.length === 0) {
+        emptyHistory.style.display = 'block';
+        return;
+      }
+
+      emptyHistory.style.display = 'none';
+      listArea.innerHTML = '';
+
+      historyLog.forEach(log => {
+        let badge = "🌱";
+        let colorClass = "bg-slate-50 border-slate-100 text-slate-600";
+        
+        if (log.resultType === 'all') {
+          badge = "👑";
+          colorClass = "bg-yellow-50 border-yellow-100 text-yellow-800";
+        } else if (log.resultType === 'half') {
+          badge = "⭐";
+          colorClass = "bg-blue-50 border-blue-100 text-blue-800";
+        }
+
+        const div = document.createElement('div');
+        div.className = `flex justify-between items-center p-3 rounded-xl border text-sm ${colorClass}`;
+        div.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span>${badge}</span>
+            <span class="font-bold">${log.date}</span>
+            <span class="text-xs opacity-80">| 약속실천 결과</span>
+          </div>
+          <div class="font-semibold">
+            ${log.score}개 완료 <span class="text-xs font-normal">(${log.percent}%)</span>
+          </div>
+        `;
+        listArea.appendChild(div);
+      });
+    }
+
+    // 내일 다시 도전하기 (대시보드로 복귀, 상태 리셋)
+    function resetForNextDay() {
+      // 모든 체크 해제
+      ruleList.forEach(item => item.checked = false);
+
+      // 화면 상태 스위치
+      document.getElementById('step-result').classList.add('hidden');
+      document.getElementById('step-dashboard').classList.remove('hidden');
+
+      // 이펙트 정지
+      stopEffectAnimation();
+
+      renderChecklist();
+      updateDashboardStats();
+      showToast("새로운 하루의 가이드라인 약속이 리셋되었습니다! 다 함께 화이팅해봐요! 🥳");
+    }
+
+    // 규칙 수정하기 (초기 입력화면으로 복귀)
+    function goBackToSetup() {
+      document.getElementById('step-result').classList.add('hidden');
+      document.getElementById('step-dashboard').classList.add('hidden');
+      document.getElementById('history-section').classList.add('hidden');
+      document.getElementById('step-setup').classList.remove('hidden');
+
+      // 이펙트 정지
+      stopEffectAnimation();
+
+      renderRulePreview();
+    }
+
+
+    /* 애니메이션 기능 구현 (폭죽 및 별가루) */
+
+    function stopEffectAnimation() {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      particles = [];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 100% 달성 시 화려한 컨페티(폭죽) 애니메이션 효과
+    function showConfettiEffect() {
+      stopEffectAnimation();
+      
+      const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+      const maxParticles = 120;
+
+      // 양쪽 벽 및 중앙에서 무작위 분사 시드 생성
+      for (let i = 0; i < maxParticles; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: canvas.height + Math.random() * 50,
+          vx: (Math.random() - 0.5) * 12,
+          vy: -Math.random() * 18 - 8,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 8 + 6,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 10,
+          opacity: 1,
+          gravity: 0.35,
+          friction: 0.98
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+
+        particles.forEach(p => {
+          if (p.opacity <= 0) return;
+          
+          active = true;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.vx *= p.friction;
+          p.rotation += p.rotationSpeed;
+          
+          if (p.y > canvas.height / 2) {
+            p.opacity -= 0.006;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation * Math.PI / 180);
+          ctx.globalAlpha = p.opacity;
+          ctx.fillStyle = p.color;
+          // 리본 형태나 직사각형으로 그림
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
+          ctx.restore();
+        });
+
+        if (active) {
+          animationId = requestAnimationFrame(draw);
+        }
+      }
+
+      draw();
+    }
+
+    // 50% 이상 달성 시 화사한 별가루 애니메이션 효과
+    function showStarShowerEffect() {
+      stopEffectAnimation();
+      
+      const maxParticles = 80;
+
+      // 상단에서 별이 천천히 내려옴
+      for (let i = 0; i < maxParticles; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: -Math.random() * 100,
+          vx: (Math.random() - 0.5) * 2,
+          vy: Math.random() * 3 + 1,
+          color: `hsl(${Math.random() * 40 + 40}, 100%, 70%)`, // 따뜻한 골드, 옐로우톤 파스텔
+          size: Math.random() * 6 + 4,
+          opacity: Math.random() * 0.5 + 0.5,
+          angle: Math.random() * Math.PI * 2,
+          angularSpeed: 0.05
+        });
+      }
+
+      // 5각 별을 그리는 함수
+      function drawStar(cx, cy, spikes, outerRadius, innerRadius, color, opacity) {
+        let rot = Math.PI / 2 * 3;
+        let x = cx;
+        let y = cy;
+        let step = Math.PI / spikes;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - outerRadius);
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = color;
+
+        for (let i = 0; i < spikes; i++) {
+          x = cx + Math.cos(rot) * outerRadius;
+          y = cy + Math.sin(rot) * outerRadius;
+          ctx.lineTo(x, y);
+          rot += step;
+
+          x = cx + Math.cos(rot) * innerRadius;
+          y = cy + Math.sin(rot) * innerRadius;
+          ctx.lineTo(x, y);
+          rot += step;
+        }
+        ctx.lineTo(cx, cy - outerRadius);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+
+        particles.forEach(p => {
+          if (p.y > canvas.height) return;
+          
+          active = true;
+          p.y += p.vy;
+          p.x += p.vx;
+          p.angle += p.angularSpeed;
+          p.opacity -= 0.001; // 천천히 소멸
+
+          if (p.opacity > 0) {
+            drawStar(p.x, p.y, 5, p.size, p.size / 2, p.color, p.opacity);
+          }
+        });
+
+        if (active) {
+          animationId = requestAnimationFrame(draw);
+        }
+      }
+
+      draw();
+    }
+
+    // HTML XSS 공격 예방을 위한 이스케이프 유틸리티
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
